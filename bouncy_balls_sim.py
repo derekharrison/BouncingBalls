@@ -9,14 +9,18 @@ writer=manimation.FFMpegWriter(bitrate=20000, fps=120)
 fig = plt.figure(figsize=(8,8))
 
 #Parameters
-h = 5.0     #Initial height of the ball
+h_1 = 5.0   #Initial height of the ball
+x_1 = 0     #Intial x position
+vx_1 = 3.0  #Initial x velocity of the ball    
+vy_1 = 0.1  #Initial y velocity of the ball
+h_2 = 5.0   #Initial height of the ball
+x_2 = 0     #Intial x position
+vx_2 = 3.0  #Initial x velocity of the ball    
+vy_2 = 0.1  #Initial y velocity of the ball
 Rp = 0.2    #Radius of the ball
-vx = 3.0    #Initial x velocity of the ball    
-vy = 0.1    #Initial y velocity of the ball
 g = -9.81   #Acceleration constant
-x = 0       #Intial x position
 dt = 0.01   #Time step size
-nt = 2000   #Number of time steps
+nt = 500    #Number of time steps
 lwall = -3  #Location of left wall
 rwall = 6   #Location of right wall
 
@@ -27,7 +31,7 @@ coll_partner_is_ground = 'ground'
 small_num = 1e-8
 
 #Functions
-def calc_min_coll_time_and_partner(h, vy, x, vx):
+def calc_min_coll_time_walls(h, vy, x, vx):
     min_coll_time = dt
     coll_partner = 'none'
 
@@ -70,7 +74,7 @@ def update_velocities(min_coll_time, coll_partner, vx, vy):
 def perform_simulation(nt, x, h, vx, vy):
     f = open("data.txt", "w")
     for t_step in range(0, nt):
-        min_coll_time, coll_partner = calc_min_coll_time_and_partner(h, vy, x, vx)
+        min_coll_time, coll_partner = calc_min_coll_time_walls(h, vy, x, vx)
         x, h = update_positions(min_coll_time, x, h, vx, vy)
         vx, vy = update_velocities(min_coll_time, coll_partner, vx, vy)
         x_str = str(x)
@@ -86,15 +90,15 @@ def animate(i):
     print(i)
     fig.clear()
     ax = plt.axes(xlim=(lwall, rwall), ylim=(0, 10))
-    cont = plt.scatter(x_c[i], h_c[i], s=300, c='blue')
+    cont = plt.scatter(x_c_1[i], h_c_1[i], s=300, c='blue')
     return cont
 
 #Perform calculations
-perform_simulation(nt, x, h, vx, vy)
+perform_simulation(nt, x_1, h_1, vx_1, vy_1)
 
 #Read data
 data = 'data.txt'
-x_c, h_c = np.genfromtxt(data, unpack=True)
+x_c_1, h_c_1 = np.genfromtxt(data, unpack=True)
 
 #Create video of results
 size_t = nt 
