@@ -35,9 +35,13 @@ part_2_coll_with_wall = 'part_two_collides_with_wall'
 small_num = 1e-6
 
 #Functions
-def calc_min_coll_time_walls(h, vy, x, vx):
+def calc_min_coll_time_walls(r_vec, v_vec):
     min_coll_time = dt
     coll_partner = 'none'
+    x = r_vec[0]
+    h = r_vec[1]
+    vx = v_vec[0]
+    vy = v_vec[1]
 
     tcg = (Rp - h)/(vy + 1e-50)
     if tcg < min_coll_time and tcg >= 0:
@@ -56,9 +60,9 @@ def calc_min_coll_time_walls(h, vy, x, vx):
 
     return min_coll_time, coll_partner
 
-def calc_min_coll_time_particles(h_1, vy_1, x_1, vx_1, h_2, vy_2, x_2, vx_2):
-    rab = [x_2 - x_1, h_2 - h_1]
-    vab = [vx_2 - vx_1, vy_2 - vy_1]
+def calc_min_coll_time_particles(r_vec_1, v_vec_1, r_vec_2, v_vec_2):
+    rab = [r_vec_2[0] - r_vec_1[0], r_vec_2[1] - r_vec_1[1]]
+    vab = [v_vec_2[0] - v_vec_1[0], v_vec_2[1] - v_vec_1[1]]
     Disc = np.dot(rab,vab)*np.dot(rab,vab)-np.dot(vab, vab)*(np.dot(rab, rab)-(2*Rp)*(2*Rp))
     coll_time_particle = dt
     if Disc > 0:
@@ -66,60 +70,53 @@ def calc_min_coll_time_particles(h_1, vy_1, x_1, vx_1, h_2, vy_2, x_2, vx_2):
 
     return coll_time_particle
 
-def update_positions(min_coll_time, x, h, vx, vy):
-    x = x + vx*min_coll_time*(1 - small_num)
-    h = h + vy*min_coll_time*(1 - small_num)
+def update_positions(min_coll_time, r_vec, v_vec):
+    r_vec[0] = r_vec[0] + v_vec[0]*min_coll_time*(1 - small_num)
+    r_vec[1] = r_vec[1] + v_vec[1]*min_coll_time*(1 - small_num)
 
-    return x, h
+    return r_vec
 
-def update_velocities(min_coll_time, coll_partner, part_id_for_wall_colls, x_1, h_1, vx_1, vy_1, x_2, h_2, vx_2, vy_2):
+def update_velocities(min_coll_time, coll_partner, part_id_for_wall_colls, r_vec_1, v_vec_1, r_vec_2, v_vec_2):
     if min_coll_time < dt and part_id_for_wall_colls is part_1_coll_with_wall:
         if coll_partner is coll_partner_is_ground:
-            vy_1 = -vy_1*0.9
+            v_vec_1[1] = -v_vec_1[1]*0.9
         elif coll_partner is coll_partner_is_lwall:
-            vx_1 = -vx_1
+            v_vec_1[0] = -v_vec_1[0]
         elif coll_partner is coll_partner_is_rwall:
-            vx_1 = -vx_1
+            v_vec_1[0] = -v_vec_1[0]
 
     elif min_coll_time < dt and part_id_for_wall_colls is part_2_coll_with_wall:
         if coll_partner is coll_partner_is_ground:
-            vy_2 = -vy_2*0.9
+            v_vec_2[1] = -v_vec_2[1]*0.9
         elif coll_partner is coll_partner_is_lwall:
-            vx_2 = -vx_2
+            v_vec_2[0] = -v_vec_2[0]
         elif coll_partner is coll_partner_is_rwall:
-            vx_2 = -vx_2
+            v_vec_2[0] = -v_vec_2[0]
             
     elif min_coll_time < dt and coll_partner is coll_partner_is_particles:
-            v_1, v_2 = update_velocity_part_coll(x_1, h_1, vx_1, vy_1, x_2, h_2, vx_2, vy_2)
-            vx_1 = v_1[0]
-            vy_1 = v_1[1]
-            vx_2 = v_2[0]
-            vy_2 = v_2[1]            
+            v_vec_1, v_vec_2 = update_velocity_part_coll(r_vec_1, v_vec_1, r_vec_2, v_vec_2)           
     elif min_coll_time >= dt:
-        vy_1 = vy_1 + g*min_coll_time
-        vy_2 = vy_2 + g*min_coll_time
+        v_vec_1[1] = v_vec_1[1] + g*min_coll_time 
+        v_vec_2[1] = v_vec_2[1] + g*min_coll_time
 
-    return vx_1, vy_1, vx_2, vy_2
+    return v_vec_1, v_vec_2
 
-def update_velocity_part_coll(x_1, h_1, vx_1, vy_1, x_2, h_2, vx_2, vy_2):
-    ra = np.array([x_1, h_1])
-    va = np.array([vx_1, vy_1])
-    rb = np.array([x_2, h_2])
-    vb = np.array([vx_2, vy_2])
+def update_velocity_part_coll(r_vec_1, v_vec_1, r_vec_2, v_vec_2):
+    ra = np.array(r_vec_1)
+    va = np.array(v_vec_1)
+    rb = np.array(r_vec_2)
+    vb = np.array(v_vec_2)
     n = (ra-rb)/sqrt(np.dot((ra-rb), (ra-rb)))
                        
     del_v = n*np.dot((va - vb), n)
                       
     #Update velocities                      
-    vx_1 = vx_1 - del_v[0]
-    vy_1 = vy_1 - del_v[1]
-    vx_2 = vx_2 + del_v[0]
-    vy_2 = vy_2 + del_v[1]
+    v_vec_1[0] = v_vec_1[0] - del_v[0]
+    v_vec_1[1] = v_vec_1[1] - del_v[1]
+    v_vec_2[0] = v_vec_2[0] + del_v[0]
+    v_vec_2[1] = v_vec_2[1] + del_v[1]
 
-    v_1 = [vx_1, vy_1]
-    v_2 = [vx_2, vy_2]
-
-    return v_1, v_2
+    return v_vec_1, v_vec_2
 
 def calc_min_coll_time_and_partners(min_coll_time_1,
                                     min_coll_time_2,
@@ -145,23 +142,23 @@ def calc_min_coll_time_and_partners(min_coll_time_1,
     return min_coll_time, coll_partner, part_id_for_wall_colls
     
 
-def perform_simulation(nt, x_1, h_1, vx_1, vy_1, x_2, h_2, vx_2, vy_2):
+def perform_simulation(nt, r_vec_1, v_vec_1, r_vec_2, v_vec_2):    
     f = open("data.txt", "w")
     for t_step in range(0, nt):
-        min_coll_time_1, coll_partner_1 = calc_min_coll_time_walls(h_1, vy_1, x_1, vx_1)
-        min_coll_time_2, coll_partner_2 = calc_min_coll_time_walls(h_2, vy_2, x_2, vx_2)
-        coll_time_particles = calc_min_coll_time_particles(h_1, vy_1, x_1, vx_1, h_2, vy_2, x_2, vx_2)
+        min_coll_time_1, coll_partner_1 = calc_min_coll_time_walls(r_vec_1, v_vec_1)
+        min_coll_time_2, coll_partner_2 = calc_min_coll_time_walls(r_vec_2, v_vec_2)
+        coll_time_particles = calc_min_coll_time_particles(r_vec_1, v_vec_1, r_vec_2, v_vec_2)
         min_coll_time, coll_partner, part_id_for_wall_colls = calc_min_coll_time_and_partners(min_coll_time_1, min_coll_time_2, coll_time_particles,
                                                                                               coll_partner_1, coll_partner_2)
-        x_1, h_1 = update_positions(min_coll_time, x_1, h_1, vx_1, vy_1)
-        x_2, h_2 = update_positions(min_coll_time, x_2, h_2, vx_2, vy_2)
-        vx_1, vy_1, vx_2, vy_2 = update_velocities(min_coll_time, coll_partner, part_id_for_wall_colls, x_1, h_1, vx_1, vy_1, x_2, h_2, vx_2, vy_2)
+        r_vec_1 = update_positions(min_coll_time, r_vec_1, v_vec_1)
+        r_vec_2 = update_positions(min_coll_time, r_vec_2, v_vec_2)
+        v_vec_1, v_vec_2 = update_velocities(min_coll_time, coll_partner, part_id_for_wall_colls, r_vec_1, v_vec_1, r_vec_2, v_vec_2)
         
-        x_str_1 = str(x_1)
-        h_str_1 = str(h_1)
+        x_str_1 = str(r_vec_1[0])
+        h_str_1 = str(r_vec_1[1])
 
-        x_str_2 = str(x_2)
-        h_str_2 = str(h_2)
+        x_str_2 = str(r_vec_2[0])
+        h_str_2 = str(r_vec_2[1])
         
         f.write(x_str_1)
         f.write(" ")
@@ -184,7 +181,11 @@ def animate(i):
     return cont
 
 #Perform calculations
-perform_simulation(nt, x_1, h_1, vx_1, vy_1, x_2, h_2, vx_2, vy_2)
+r_vec_1 = [x_1, h_1]
+r_vec_2 = [x_2, h_2]
+v_vec_1 = [vx_1, vy_1]
+v_vec_2 = [vx_2, vy_2]
+perform_simulation(nt, r_vec_1, v_vec_1, r_vec_2, v_vec_2)
 
 #Read data
 data = 'data.txt'
