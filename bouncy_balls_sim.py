@@ -18,7 +18,6 @@ x_2 = 2     #Intial x position of ball 2
 vx_2 = -3.0 #Initial x velocity of ball 2  
 vy_2 = 0.1  #Initial y velocity of ball 2
 Rp = 0.2    #Radii of the balls
-m = 1       #Mass of the balls
 g = -9.81   #Acceleration constant
 dt = 0.01   #Time step size
 nt = 2500   #Number of time steps
