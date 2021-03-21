@@ -14,7 +14,7 @@ x_1 = 0     #Intial x position
 vx_1 = 3.0  #Initial x velocity of the ball    
 vy_1 = 0.1  #Initial y velocity of the ball
 h_2 = 5.0   #Initial height of the ball
-x_2 = 0     #Intial x position
+x_2 = 2     #Intial x position
 vx_2 = 3.0  #Initial x velocity of the ball    
 vy_2 = 0.1  #Initial y velocity of the ball
 Rp = 0.2    #Radius of the ball
@@ -52,6 +52,18 @@ def calc_min_coll_time_walls(h, vy, x, vx):
 
     return min_coll_time, coll_partner
 
+def calc_min_coll_time_particles(h_1, vy_1, x_1, vx_1, h_2, vy_2, x_2, vx_2):
+    rab = [x_1 - x_2, h_2 - h_1]
+    vab = [vx_2 - vx_1, vy_2 - vy_1]
+    Disc = np.dot(rab,vab)*np.dot(rab,vab)-np.dot(vab, vab)*(np.dot(rab, rab)-(2*Rp)*(2*Rp))
+    coll_time_particle = 3e+8
+    if Disc > 0:
+        coll_time_particle = (-np.dot(rab, vab) - sqrt(Disc)) / np.dot(vab, vab)
+    else:
+        coll_time_particle = dt
+
+    return coll_time_particle
+
 def update_positions(min_coll_time, x, h, vx, vy):
     x = x + vx*min_coll_time*(1 - small_num)
     h = h + vy*min_coll_time*(1 - small_num)
@@ -71,14 +83,24 @@ def update_velocities(min_coll_time, coll_partner, vx, vy):
 
     return vx, vy
 
-def perform_simulation(nt, x, h, vx, vy):
+def calc_min_coll_time(min_coll_time_1,
+                       min_coll_time_2,
+                       coll_time_particles,
+                       coll_partner_1,
+                       coll_partner_2, coll_partner_particle):
+    return
+    
+
+def perform_simulation(nt, x_1, h_1, vx_1, vy_1, x_2, h_2, vx_2, vy_2):
     f = open("data.txt", "w")
     for t_step in range(0, nt):
-        min_coll_time, coll_partner = calc_min_coll_time_walls(h, vy, x, vx)
-        x, h = update_positions(min_coll_time, x, h, vx, vy)
-        vx, vy = update_velocities(min_coll_time, coll_partner, vx, vy)
-        x_str = str(x)
-        h_str = str(h)
+        min_coll_time_1, coll_partner_1 = calc_min_coll_time_walls(h_1, vy_1, x_1, vx_1)
+        min_coll_time_2, coll_partner_2 = calc_min_coll_time_walls(h_2, vy_2, x_2, vx_2)
+        coll_time_particles = calc_min_coll_time_particles(h_1, vy_1, x_1, vx_1, h_2, vy_2, x_2, vx_2)
+        x_1, h_1 = update_positions(min_coll_time_1, x_1, h_1, vx_1, vy_1)
+        vx_1, vy_1 = update_velocities(min_coll_time_1, coll_partner_1, vx_1, vy_1)
+        x_str = str(x_1)
+        h_str = str(h_1)
         f.write(x_str)
         f.write(" ")
         f.write(h_str)
@@ -94,7 +116,7 @@ def animate(i):
     return cont
 
 #Perform calculations
-perform_simulation(nt, x_1, h_1, vx_1, vy_1)
+perform_simulation(nt, x_1, h_1, vx_1, vy_1, x_2, h_2, vx_2, vy_2)
 
 #Read data
 data = 'data.txt'
