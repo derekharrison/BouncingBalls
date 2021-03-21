@@ -9,15 +9,15 @@ writer=manimation.FFMpegWriter(bitrate=20000, fps=120)
 fig = plt.figure(figsize=(8,8))
 
 #Parameters
-h_1 = 5.0   #Initial height of the ball
-x_1 = 0     #Intial x position
-vx_1 = 3.0  #Initial x velocity of the ball    
-vy_1 = 0.1  #Initial y velocity of the ball
-h_2 = 5.0   #Initial height of the ball
-x_2 = 2     #Intial x position
-vx_2 = -3.0 #Initial x velocity of the ball    
-vy_2 = 0.1  #Initial y velocity of the ball
-Rp = 0.2    #Radius of the ball
+h_1 = 5.0   #Initial height of ball 1
+x_1 = 0     #Intial x position of ball 1
+vx_1 = 3.0  #Initial x velocity of ball 1    
+vy_1 = 0.1  #Initial y velocity of ball 1
+h_2 = 5.0   #Initial height of ball 2
+x_2 = 2     #Intial x position of ball 2
+vx_2 = -3.0 #Initial x velocity of ball 2  
+vy_2 = 0.1  #Initial y velocity of ball 2
+Rp = 0.2    #Radii of the balls
 m = 1       #Mass of the balls
 g = -9.81   #Acceleration constant
 dt = 0.01   #Time step size
